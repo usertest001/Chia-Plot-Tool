@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using Microsoft.Win32;
 
 namespace CHIA_PLOT
 {
@@ -145,6 +146,8 @@ namespace CHIA_PLOT
             {
                 gvJobs.UpdateCellValue(3, i);
             }
+
+            gbJobs.Text = $"当前任务:{Arguments.Jobs.Count}/{Arguments.Parallel}";
 
         }
 
@@ -588,6 +591,41 @@ namespace CHIA_PLOT
                     rtxtPlotLog.Text = File.ReadAllText(logFileName);
                 }
             }
+        }
+
+
+        private void Main_Load(object sender, EventArgs e)
+        {
+            //获取命令行快速编辑状态
+            RegistryKey key = Registry.CurrentUser;
+            RegistryKey quickEditKey = key.OpenSubKey("Console", true);
+            int quickEdit = (int)quickEditKey.GetValue("QuickEdit");
+            if (quickEdit == 0)
+            {
+                if (cbQuickEdit.Checked)
+                    cbQuickEdit.Checked = false;
+            }
+            else
+            {
+                if (cbQuickEdit.Checked != true)
+                    cbQuickEdit.Checked = true;
+            }
+        }
+
+        private void cbQuickEdit_CheckedChanged(object sender, EventArgs e)
+        {
+            //获取命令行快速编辑状态
+            RegistryKey key = Registry.CurrentUser;
+            RegistryKey quickEditKey = key.OpenSubKey("Console", true);
+            if (cbQuickEdit.Checked)
+            {
+                quickEditKey?.SetValue("QuickEdit", 1);
+            }
+            else
+            {
+                quickEditKey?.SetValue("QuickEdit", 0);
+            }
+
         }
 
         //private void CheckDiskType(BindingList<ChiaDirectory> directories, BindingList<ChiaDirectory> temp1Directories, BindingList<ChiaDirectory> temp2Directories)

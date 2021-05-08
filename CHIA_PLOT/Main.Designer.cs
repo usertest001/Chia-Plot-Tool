@@ -38,6 +38,7 @@ namespace CHIA_PLOT
             this.btnStart = new System.Windows.Forms.Button();
             this.btnCancelSelect = new System.Windows.Forms.Button();
             this.btnCancelAll = new System.Windows.Forms.Button();
+            this.cbQuickEdit = new System.Windows.Forms.CheckBox();
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.label3 = new System.Windows.Forms.Label();
             this.cbK = new System.Windows.Forms.ComboBox();
@@ -72,7 +73,7 @@ namespace CHIA_PLOT
             this.cbl2 = new System.Windows.Forms.CheckedListBox();
             this.cblD = new System.Windows.Forms.CheckedListBox();
             this.btnRefreshDisk = new System.Windows.Forms.Button();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.gbJobs = new System.Windows.Forms.GroupBox();
             this.gvJobs = new System.Windows.Forms.DataGridView();
             this.idDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.processIdDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -103,7 +104,7 @@ namespace CHIA_PLOT
             this.tableLayoutPanel2.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel4.SuspendLayout();
-            this.groupBox2.SuspendLayout();
+            this.gbJobs.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.gvJobs)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.jobsBindingSource)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
@@ -194,6 +195,18 @@ namespace CHIA_PLOT
             this.btnCancelAll.UseVisualStyleBackColor = true;
             this.btnCancelAll.Click += new System.EventHandler(this.btnCancelAll_Click);
             // 
+            // cbQuickEdit
+            // 
+            this.cbQuickEdit.AutoSize = true;
+            this.cbQuickEdit.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.cbQuickEdit.Location = new System.Drawing.Point(819, 30);
+            this.cbQuickEdit.Name = "cbQuickEdit";
+            this.cbQuickEdit.Size = new System.Drawing.Size(108, 21);
+            this.cbQuickEdit.TabIndex = 5;
+            this.cbQuickEdit.Text = "命令行快速编辑";
+            this.cbQuickEdit.UseVisualStyleBackColor = true;
+            this.cbQuickEdit.CheckedChanged += new System.EventHandler(this.cbQuickEdit_CheckedChanged);
+            // 
             // tableLayoutPanel3
             // 
             this.tableLayoutPanel3.AutoSize = true;
@@ -222,6 +235,7 @@ namespace CHIA_PLOT
             this.tableLayoutPanel3.Controls.Add(this.label9, 2, 1);
             this.tableLayoutPanel3.Controls.Add(this.txtU, 3, 1);
             this.tableLayoutPanel3.Controls.Add(this.cbNoWindow, 9, 1);
+            this.tableLayoutPanel3.Controls.Add(this.cbQuickEdit, 8, 1);
             this.tableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Top;
             this.tableLayoutPanel3.Location = new System.Drawing.Point(3, 100);
             this.tableLayoutPanel3.Name = "tableLayoutPanel3";
@@ -251,7 +265,7 @@ namespace CHIA_PLOT
             this.cbK.FormattingEnabled = true;
             this.cbK.Location = new System.Drawing.Point(20, 3);
             this.cbK.Name = "cbK";
-            this.cbK.Size = new System.Drawing.Size(159, 20);
+            this.cbK.Size = new System.Drawing.Size(148, 20);
             this.cbK.TabIndex = 5;
             this.cbK.ValueMember = "KName";
             this.cbK.SelectedValueChanged += new System.EventHandler(this.cbK_SelectedValueChanged);
@@ -268,7 +282,7 @@ namespace CHIA_PLOT
             // 
             this.label5.AutoSize = true;
             this.label5.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label5.Location = new System.Drawing.Point(185, 0);
+            this.label5.Location = new System.Drawing.Point(174, 0);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(41, 27);
             this.label5.TabIndex = 6;
@@ -279,7 +293,7 @@ namespace CHIA_PLOT
             // 
             this.label6.AutoSize = true;
             this.label6.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label6.Location = new System.Drawing.Point(397, 0);
+            this.label6.Location = new System.Drawing.Point(375, 0);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(59, 27);
             this.label6.TabIndex = 8;
@@ -290,26 +304,26 @@ namespace CHIA_PLOT
             // 
             this.txtB.DataBindings.Add(new System.Windows.Forms.Binding("Text", this.argumentsBindingSource, "B", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
             this.txtB.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtB.Location = new System.Drawing.Point(462, 3);
+            this.txtB.Location = new System.Drawing.Point(440, 3);
             this.txtB.Mask = "99999";
             this.txtB.Name = "txtB";
-            this.txtB.Size = new System.Drawing.Size(159, 21);
+            this.txtB.Size = new System.Drawing.Size(148, 21);
             this.txtB.TabIndex = 9;
             // 
             // txtR
             // 
             this.txtR.DataBindings.Add(new System.Windows.Forms.Binding("Value", this.argumentsBindingSource, "R", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged, null, "N0"));
             this.txtR.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtR.Location = new System.Drawing.Point(232, 3);
+            this.txtR.Location = new System.Drawing.Point(221, 3);
             this.txtR.Name = "txtR";
-            this.txtR.Size = new System.Drawing.Size(159, 21);
+            this.txtR.Size = new System.Drawing.Size(148, 21);
             this.txtR.TabIndex = 10;
             // 
             // label7
             // 
             this.label7.AutoSize = true;
             this.label7.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label7.Location = new System.Drawing.Point(627, 0);
+            this.label7.Location = new System.Drawing.Point(594, 0);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(65, 27);
             this.label7.TabIndex = 11;
@@ -320,18 +334,18 @@ namespace CHIA_PLOT
             // 
             this.txtDelay.DataBindings.Add(new System.Windows.Forms.Binding("Value", this.argumentsBindingSource, "Delay", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
             this.txtDelay.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtDelay.Location = new System.Drawing.Point(698, 3);
+            this.txtDelay.Location = new System.Drawing.Point(665, 3);
             this.txtDelay.Name = "txtDelay";
-            this.txtDelay.Size = new System.Drawing.Size(159, 21);
+            this.txtDelay.Size = new System.Drawing.Size(148, 21);
             this.txtDelay.TabIndex = 12;
             // 
             // label8
             // 
             this.label8.AutoSize = true;
             this.label8.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label8.Location = new System.Drawing.Point(863, 0);
+            this.label8.Location = new System.Drawing.Point(819, 0);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(53, 27);
+            this.label8.Size = new System.Drawing.Size(108, 27);
             this.label8.TabIndex = 13;
             this.label8.Text = "并行数量";
             this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -340,9 +354,9 @@ namespace CHIA_PLOT
             // 
             this.txtParallel.DataBindings.Add(new System.Windows.Forms.Binding("Value", this.argumentsBindingSource, "Parallel", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
             this.txtParallel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtParallel.Location = new System.Drawing.Point(922, 3);
+            this.txtParallel.Location = new System.Drawing.Point(933, 3);
             this.txtParallel.Name = "txtParallel";
-            this.txtParallel.Size = new System.Drawing.Size(159, 21);
+            this.txtParallel.Size = new System.Drawing.Size(148, 21);
             this.txtParallel.TabIndex = 14;
             // 
             // cbE
@@ -352,7 +366,7 @@ namespace CHIA_PLOT
             this.cbE.Location = new System.Drawing.Point(20, 30);
             this.cbE.MinimumSize = new System.Drawing.Size(100, 21);
             this.cbE.Name = "cbE";
-            this.cbE.Size = new System.Drawing.Size(159, 21);
+            this.cbE.Size = new System.Drawing.Size(148, 21);
             this.cbE.TabIndex = 16;
             this.cbE.Text = "BitField";
             this.cbE.UseVisualStyleBackColor = true;
@@ -362,7 +376,7 @@ namespace CHIA_PLOT
             // 
             this.label9.AutoSize = true;
             this.label9.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label9.Location = new System.Drawing.Point(185, 27);
+            this.label9.Location = new System.Drawing.Point(174, 27);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(41, 27);
             this.label9.TabIndex = 17;
@@ -378,14 +392,14 @@ namespace CHIA_PLOT
             0,
             0,
             0});
-            this.txtU.Location = new System.Drawing.Point(232, 30);
+            this.txtU.Location = new System.Drawing.Point(221, 30);
             this.txtU.Maximum = new decimal(new int[] {
             128,
             0,
             0,
             0});
             this.txtU.Name = "txtU";
-            this.txtU.Size = new System.Drawing.Size(159, 21);
+            this.txtU.Size = new System.Drawing.Size(148, 21);
             this.txtU.TabIndex = 18;
             this.txtU.Value = new decimal(new int[] {
             128,
@@ -398,9 +412,9 @@ namespace CHIA_PLOT
             this.cbNoWindow.AutoSize = true;
             this.cbNoWindow.DataBindings.Add(new System.Windows.Forms.Binding("Checked", this.argumentsBindingSource, "NoWindow", true));
             this.cbNoWindow.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.cbNoWindow.Location = new System.Drawing.Point(922, 30);
+            this.cbNoWindow.Location = new System.Drawing.Point(933, 30);
             this.cbNoWindow.Name = "cbNoWindow";
-            this.cbNoWindow.Size = new System.Drawing.Size(159, 21);
+            this.cbNoWindow.Size = new System.Drawing.Size(148, 21);
             this.cbNoWindow.TabIndex = 19;
             this.cbNoWindow.Text = "无窗口模式";
             this.cbNoWindow.UseVisualStyleBackColor = true;
@@ -617,16 +631,16 @@ namespace CHIA_PLOT
             this.btnRefreshDisk.UseVisualStyleBackColor = true;
             this.btnRefreshDisk.Click += new System.EventHandler(this.btnRefreshDisk_Click);
             // 
-            // groupBox2
+            // gbJobs
             // 
-            this.groupBox2.Controls.Add(this.gvJobs);
-            this.groupBox2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupBox2.Location = new System.Drawing.Point(0, 0);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(1090, 182);
-            this.groupBox2.TabIndex = 4;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "当前任务";
+            this.gbJobs.Controls.Add(this.gvJobs);
+            this.gbJobs.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.gbJobs.Location = new System.Drawing.Point(0, 0);
+            this.gbJobs.Name = "gbJobs";
+            this.gbJobs.Size = new System.Drawing.Size(1090, 182);
+            this.gbJobs.TabIndex = 4;
+            this.gbJobs.TabStop = false;
+            this.gbJobs.Text = "当前任务";
             // 
             // gvJobs
             // 
@@ -815,7 +829,7 @@ namespace CHIA_PLOT
             // 
             // splitContainer1.Panel1
             // 
-            this.splitContainer1.Panel1.Controls.Add(this.groupBox2);
+            this.splitContainer1.Panel1.Controls.Add(this.gbJobs);
             // 
             // splitContainer1.Panel2
             // 
@@ -849,6 +863,7 @@ namespace CHIA_PLOT
             this.Controls.Add(this.tableLayoutPanel4);
             this.Name = "Main";
             this.Text = "PlotingTool";
+            this.Load += new System.EventHandler(this.Main_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.flowLayoutPanel1.ResumeLayout(false);
@@ -867,7 +882,7 @@ namespace CHIA_PLOT
             this.tableLayoutPanel1.PerformLayout();
             this.tableLayoutPanel4.ResumeLayout(false);
             this.tableLayoutPanel4.PerformLayout();
-            this.groupBox2.ResumeLayout(false);
+            this.gbJobs.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.gvJobs)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.jobsBindingSource)).EndInit();
             this.splitContainer2.Panel1.ResumeLayout(false);
@@ -927,7 +942,7 @@ namespace CHIA_PLOT
         private System.Windows.Forms.Button btnStart;
         private System.Windows.Forms.Button btnCancelSelect;
         private System.Windows.Forms.Button btnCancelAll;
-        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.GroupBox gbJobs;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.SplitContainer splitContainer2;
         private System.Windows.Forms.BindingSource argumentsBindingSource;
@@ -950,5 +965,6 @@ namespace CHIA_PLOT
         private System.Windows.Forms.DataGridViewTextBoxColumn directoryDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewCheckBoxColumn bitFieldDataGridViewCheckBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn logFileNameDataGridViewTextBoxColumn;
+        private System.Windows.Forms.CheckBox cbQuickEdit;
     }
 }

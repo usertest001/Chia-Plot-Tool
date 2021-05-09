@@ -93,6 +93,7 @@ namespace CHIA_PLOT
             Arguments.E = true;
             Arguments.U = 128;
             Arguments.K = k32;
+            Arguments.N = 1;
 
             Arguments.Directories = new BindingList<ChiaDirectory>();
             Arguments.Temp1Directories = new BindingList<ChiaDirectory>();

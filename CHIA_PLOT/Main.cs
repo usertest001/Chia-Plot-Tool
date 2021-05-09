@@ -141,144 +141,179 @@ namespace CHIA_PLOT
 
         private void _uiRefreshTimer_Tick(object sender, EventArgs e)
         {
-            GetLocalDisk(Arguments.Directories, Arguments.Temp1Directories, Arguments.Temp2Directories);
-            for (int i = 0; i < gvJobs.Rows.Count; i++)
+            try
             {
-                gvJobs.UpdateCellValue(3, i);
+                GetLocalDisk(Arguments.Directories, Arguments.Temp1Directories, Arguments.Temp2Directories);
+                for (int i = 0; i < gvJobs.Rows.Count; i++)
+                {
+                    gvJobs.UpdateCellValue(3, i);
+                }
+
+                gbJobs.Text = $"当前任务:{Arguments.Jobs.Count}/{Arguments.Parallel}";
+            }
+            catch (Exception exception)
+            {
+                SetMessage(exception.Message + exception.StackTrace, MessageType.Error);
             }
 
-            gbJobs.Text = $"当前任务:{Arguments.Jobs.Count}/{Arguments.Parallel}";
 
         }
 
         private void _jobTimer_Tick(object sender, EventArgs e)
         {
-            _jobTimer.Interval = Arguments.Delay * 60 * 1000;
-            string d = string.Empty;
-            var t = Arguments.Temp1Directories.FirstOrDefault(c => c.Checked)?.DriveName;
-            var t2 = Arguments.Temp2Directories.FirstOrDefault(c => c.Checked)?.DriveName;
+            try
+            {
+                _jobTimer.Interval = Arguments.Delay * 60 * 1000;
+                string d = string.Empty;
+                var t = Arguments.Temp1Directories.FirstOrDefault(c => c.Checked)?.DriveName;
+                var t2 = Arguments.Temp2Directories.FirstOrDefault(c => c.Checked)?.DriveName;
 
-            if (string.IsNullOrEmpty(t))
-            {
-                SetMessage($"请选择缓存盘", MessageType.Normal);
-                return;
-            }
-            else
-            {
-                t = Path.Combine(t, "t");
-                if (!Directory.Exists(t))
+                if (string.IsNullOrEmpty(t))
                 {
-                    Directory.CreateDirectory(t);
-                }
-            }
-            if (string.IsNullOrEmpty(t2))
-            {
-                SetMessage($"请选择第二缓存盘", MessageType.Normal);
-                return;
-            }
-            else
-            {
-                t2 = Path.Combine(t2, "t2");
-                if (!Directory.Exists(t2))
-                {
-                    Directory.CreateDirectory(t2);
-                }
-            }
-
-
-            #region 选择磁盘
-            foreach (ChiaDirectory chiaDirectory in Arguments.Directories.Where(c => c.Checked))
-            {
-                //计算当前盘符运行中的容量
-                long runningChiaSize = Arguments.Jobs.Count(c => Path.GetPathRoot(c.Directory) == chiaDirectory.DriveName) * Arguments.K.KSize;
-                var driveInfo = DriveInfo.GetDrives().First(c => c.Name == chiaDirectory.DriveName);
-                if (driveInfo.TotalFreeSpace >= runningChiaSize + Arguments.K.KSize)
-                {
-                    d = Path.Combine(driveInfo.Name, "Farm");
-                    if (!Directory.Exists(d))
-                    {
-                        Directory.CreateDirectory(d);
-                    }
-                    break;
-                }
-            }
-
-            if (string.IsNullOrEmpty(d))
-            {
-                SetMessage($"HDD没有可用的磁盘空间,下一个轮回（{Arguments.Delay}分钟后）将再次尝试。", MessageType.Normal);
-                return;
-            }
-
-            if (Arguments.Jobs.Count < Convert.ToInt32(Arguments.Parallel))
-            {
-                //Action action = () =>
-                //{
-                //string command = $"Start-Process {chiaFileName}  -ArgumentList \"plots create -k 32 -n 1 -t {t} -d {d} -r {txtR.Text.Trim()} -b {txtB.Text.Trim()}  -f {txtF.Text.Trim()} -p {txtP.Text.Trim()}\"  ";
-                string command = $"plots create -k {Arguments.K.KName} -n 1 -t {t} -2 {t2} -d {d} -r {Arguments.R} -b {Arguments.B} -u {Arguments.U} -f {Arguments.F} -p {Arguments.P} ";
-                if (!Arguments.E)
-                {
-                    command += " -e";
-                }
-
-
-
-                Job job = new Job(Arguments);
-                job.Id = Arguments.JobId++;
-
-                Process process = new Process();
-                process.StartInfo.FileName = Arguments.ChiaFileName;
-                process.StartInfo.Arguments = command;
-                process.StartInfo.UseShellExecute = false;
-                process.EnableRaisingEvents = true;
-                process.Exited += Process_Exited;
-                if (Arguments.NoWindow)
-                {
-                    string path = Path.Combine(Application.StartupPath, "Plot_Log");
-                    if (!Directory.Exists(path))
-                    {
-                        Directory.CreateDirectory(path);
-                    }
-
-                    job.LogFileName = Path.Combine(path, $"{job.Id}.txt");
-                    //command += $" > \"{path}\"";
-                    process.StartInfo.CreateNoWindow = true;
-                    process.StartInfo.RedirectStandardOutput = true;
-                    process.StartInfo.RedirectStandardError = true;
-                    //process.StartInfo.RedirectStandardInput = true;
-                    process.OutputDataReceived += Process_OutputDataReceived;
-                    process.ErrorDataReceived += Process_ErrorDataReceived;
-                    process.Start();
-                    process.BeginOutputReadLine();
-                    process.BeginErrorReadLine();
+                    SetMessage($"请选择缓存盘", MessageType.Normal);
+                    return;
                 }
                 else
                 {
-                    process.Start();
+                    t = Path.Combine(t, "t");
+                    if (!Directory.Exists(t))
+                    {
+                        Directory.CreateDirectory(t);
+                    }
+                }
+                if (string.IsNullOrEmpty(t2))
+                {
+                    SetMessage($"请选择第二缓存盘", MessageType.Normal);
+                    return;
+                }
+                else
+                {
+                    t2 = Path.Combine(t2, "t2");
+                    if (!Directory.Exists(t2))
+                    {
+                        Directory.CreateDirectory(t2);
+                    }
                 }
 
 
-                job.ProcessId = process.Id;
-                job.StartTime = process.StartTime;
-                job.Directory = d;
-                Arguments.Jobs.Add(job);
+                #region 选择磁盘
+                foreach (ChiaDirectory chiaDirectory in Arguments.Directories.Where(c => c.Checked))
+                {
+                    //计算当前盘符运行中的容量
+                    long runningChiaSize = Arguments.Jobs.Count(c => Path.GetPathRoot(c.Directory) == chiaDirectory.DriveName) * Arguments.K.KSize;
+                    var driveInfo = DriveInfo.GetDrives().First(c => c.Name == chiaDirectory.DriveName);
+                    if (driveInfo.TotalFreeSpace >= runningChiaSize + Arguments.K.KSize)
+                    {
+                        d = Path.Combine(driveInfo.Name, "Farm");
+                        if (!Directory.Exists(d))
+                        {
+                            Directory.CreateDirectory(d);
+                        }
+                        break;
+                    }
+                }
 
-                SetMessage($"任务{job.Id} 使用命令'{command}'成功创建任务。{Arguments.Jobs.Count}/{Arguments.Parallel}", MessageType.Start);
+                if (string.IsNullOrEmpty(d))
+                {
+                    SetMessage($"HDD没有可用的磁盘空间,下一个轮回（{Arguments.Delay}分钟后）将再次尝试。", MessageType.Normal);
+                    return;
+                }
+
+                if (Arguments.Jobs.Count < Convert.ToInt32(Arguments.Parallel))
+                {
+                    //Action action = () =>
+                    //{
+                    //string command = $"Start-Process {chiaFileName}  -ArgumentList \"plots create -k 32 -n 1 -t {t} -d {d} -r {txtR.Text.Trim()} -b {txtB.Text.Trim()}  -f {txtF.Text.Trim()} -p {txtP.Text.Trim()}\"  ";
+                    string command = $"plots create -k {Arguments.K.KName} -n {Arguments.N} -t {t} -2 {t2} -d {d} -r {Arguments.R} -b {Arguments.B} -u {Arguments.U} -f {Arguments.F} -p {Arguments.P} ";
+                    if (!Arguments.E)
+                    {
+                        command += " -e";
+                    }
+
+
+
+                    Job job = new Job(Arguments);
+                    job.Id = Arguments.JobId++;
+
+                    Process process = new Process();
+                    process.StartInfo.FileName = Arguments.ChiaFileName;
+                    process.StartInfo.Arguments = command;
+                    process.StartInfo.UseShellExecute = false;
+                    process.EnableRaisingEvents = true;
+                    process.Exited += Process_Exited;
+                    if (Arguments.NoWindow)
+                    {
+                        string path = Path.Combine(Application.StartupPath, "Plot_Log");
+                        if (!Directory.Exists(path))
+                        {
+                            Directory.CreateDirectory(path);
+                        }
+
+                        job.LogFileName = Path.Combine(path, $"{job.Id}.txt");
+                        //command += $" > \"{path}\"";
+                        process.StartInfo.CreateNoWindow = true;
+                        process.StartInfo.RedirectStandardOutput = true;
+                        process.StartInfo.RedirectStandardError = true;
+                        //process.StartInfo.RedirectStandardInput = true;
+                        process.OutputDataReceived += Process_OutputDataReceived;
+                        process.ErrorDataReceived += Process_ErrorDataReceived;
+                        process.Start();
+                        process.BeginOutputReadLine();
+                        process.BeginErrorReadLine();
+                    }
+                    else
+                    {
+                        process.Start();
+                    }
+
+
+                    job.ProcessId = process.Id;
+                    job.StartTime = process.StartTime;
+                    job.Directory = d;
+                    Arguments.Jobs.Add(job);
+
+                    SetMessage($"任务{job.Id} 使用命令'{command}'成功创建任务。{Arguments.Jobs.Count}/{Arguments.Parallel}", MessageType.Start);
+                }
+                else
+                {
+                    SetMessage($"当前已经运行了{Arguments.Jobs.Count}/{Arguments.Parallel}个任务，不需要启动新任务。", MessageType.Normal);
+                }
+                #endregion
             }
-            else
+            catch (Exception exception)
             {
-                SetMessage($"当前已经运行了{Arguments.Jobs.Count}/{Arguments.Parallel}个任务，不需要启动新任务。", MessageType.Normal);
+                SetMessage(exception.Message + exception.StackTrace, MessageType.Error);
+
             }
-            #endregion
+
         }
 
         private void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
         {
-            DataRecevied(sender, e);
+            try
+            {
+                DataRecevied(sender, e);
+            }
+            catch (Exception exception)
+            {
+                SetMessage(exception.Message + exception.StackTrace, MessageType.Error);
+
+            }
+
         }
 
         private void Process_OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
-            DataRecevied(sender, e);
+            try
+            {
+                DataRecevied(sender, e);
+            }
+            catch (Exception exception)
+            {
+                SetMessage(exception.Message + exception.StackTrace, MessageType.Error);
+
+            }
+
         }
 
         private void DataRecevied(object sender, DataReceivedEventArgs e)
@@ -299,43 +334,52 @@ namespace CHIA_PLOT
 
         private void btnStart_Click(object sender, EventArgs e)
         {
-            //获取chia进程信息
-            var chiaProcesses = Process.GetProcessesByName("chia");
-            foreach (Process oldProcess in chiaProcesses)
+            try
             {
-                if (oldProcess.MainModule.FileName == txtChiaFileName.Text)
+                //获取chia进程信息
+                var chiaProcesses = Process.GetProcessesByName("chia");
+                foreach (Process oldProcess in chiaProcesses)
                 {
-                    oldProcess.EnableRaisingEvents = true;
-                    oldProcess.Exited += Process_Exited;
-                    if (Arguments.Jobs.All(c => c.ProcessId != oldProcess.Id))
+                    if (oldProcess.MainModule.FileName == txtChiaFileName.Text)
                     {
-                        Job oldJob = new Job(Arguments);
-                        oldJob.ProcessId = oldProcess.Id;
-                        oldJob.StartTime = oldProcess.StartTime;
-                        Arguments.Jobs.Add(oldJob);
+                        oldProcess.EnableRaisingEvents = true;
+                        oldProcess.Exited += Process_Exited;
+                        if (Arguments.Jobs.All(c => c.ProcessId != oldProcess.Id))
+                        {
+                            Job oldJob = new Job(Arguments);
+                            oldJob.ProcessId = oldProcess.Id;
+                            oldJob.StartTime = oldProcess.StartTime;
+                            Arguments.Jobs.Add(oldJob);
+                        }
                     }
                 }
+
+                if (Arguments.Directories.Count(c => c.Checked) == 0)
+                {
+                    SetMessage("请选择最终目录磁盘。", MessageType.Normal);
+                    return;
+                }
+                if (Arguments.Temp1Directories.Count(c => c.Checked) == 0)
+                {
+                    SetMessage("请选择缓存目录磁盘。", MessageType.Normal);
+                    return;
+                }
+                if (Arguments.Temp2Directories.Count(c => c.Checked) == 0)
+                {
+                    SetMessage("请选择第二缓存目录磁盘。", MessageType.Normal);
+                    return;
+                }
+                if (!_jobTimer.Enabled)
+                {
+                    _jobTimer.Start();
+                }
+            }
+            catch (Exception exception)
+            {
+                SetMessage(exception.Message + exception.StackTrace, MessageType.Error);
+
             }
 
-            if (Arguments.Directories.Count(c => c.Checked) == 0)
-            {
-                SetMessage("请选择最终目录磁盘。", MessageType.Normal);
-                return;
-            }
-            if (Arguments.Temp1Directories.Count(c => c.Checked) == 0)
-            {
-                SetMessage("请选择缓存目录磁盘。", MessageType.Normal);
-                return;
-            }
-            if (Arguments.Temp2Directories.Count(c => c.Checked) == 0)
-            {
-                SetMessage("请选择第二缓存目录磁盘。", MessageType.Normal);
-                return;
-            }
-            if (!_jobTimer.Enabled)
-            {
-                _jobTimer.Start();
-            }
         }
 
         private void SetMessage(string message, MessageType messageType)
@@ -362,20 +406,28 @@ namespace CHIA_PLOT
 
         private void Process_Exited(object sender, EventArgs e)
         {
-            Action action() => () =>
+            try
             {
-                Process process = (Process)sender;
-                Job job = Arguments.Jobs.FirstOrDefault(c => c.ProcessId == process.Id);
-                if (job != null)
-                {
-                    Arguments.Jobs.Remove(job);
-                    TimeSpan ts = process.ExitTime.Subtract(process.StartTime);
-                    string message = $"任务{job.Id},进程{process.Id}已退出,BitField={job.BitField},共耗时{ts.Days}天{ts.Hours}小时{ts.Minutes}分钟";
-                    SetMessage(message, MessageType.End);
-                }
-            };
+                Action action() => () =>
+                          {
+                              Process process = (Process)sender;
+                              Job job = Arguments.Jobs.FirstOrDefault(c => c.ProcessId == process.Id);
+                              if (job != null)
+                              {
+                                  Arguments.Jobs.Remove(job);
+                                  TimeSpan ts = process.ExitTime.Subtract(process.StartTime);
+                                  string message = $"任务{job.Id},进程{process.Id}已退出,BitField={job.BitField},共耗时{ts.Days}天{ts.Hours}小时{ts.Minutes}分钟";
+                                  SetMessage(message, MessageType.End);
+                              }
+                          };
 
-            Invoke(action());
+                Invoke(action());
+            }
+            catch (Exception exception)
+            {
+                SetMessage(exception.Message + exception.StackTrace, MessageType.Error);
+            }
+
         }
 
         private void cbK_SelectedValueChanged(object sender, EventArgs e)
@@ -430,30 +482,39 @@ namespace CHIA_PLOT
 
         private void GetLocalDisk(BindingList<ChiaDirectory> directories, BindingList<ChiaDirectory> temp1Directories, BindingList<ChiaDirectory> temp2Directories)
         {
-            foreach (DriveInfo driveInfo in DriveInfo.GetDrives().Where(c => c.DriveType == DriveType.Fixed))
+            try
             {
-                if (directories.All(c => c.DriveName != driveInfo.Name))
+                foreach (DriveInfo driveInfo in DriveInfo.GetDrives()/*.Where(c => c.DriveType == DriveType.Fixed)*/)
                 {
-                    ChiaDirectory chiaDirectory = new ChiaDirectory();
-                    chiaDirectory.DriveName = driveInfo.Name;
-                    chiaDirectory.Checked = true;
-                    directories.Add(chiaDirectory);
-                }
+                    if (directories.All(c => c.DriveName != driveInfo.Name))
+                    {
+                        ChiaDirectory chiaDirectory = new ChiaDirectory();
+                        chiaDirectory.DriveName = driveInfo.Name;
+                        chiaDirectory.Checked = false;
+                        directories.Add(chiaDirectory);
+                    }
 
-                if (temp1Directories.All(c => c.DriveName != driveInfo.Name))
-                {
-                    ChiaDirectory tempDirectory = new ChiaDirectory();
-                    tempDirectory.DriveName = driveInfo.Name;
-                    temp1Directories.Add(tempDirectory);
-                }
+                    if (temp1Directories.All(c => c.DriveName != driveInfo.Name))
+                    {
+                        ChiaDirectory tempDirectory = new ChiaDirectory();
+                        tempDirectory.DriveName = driveInfo.Name;
+                        temp1Directories.Add(tempDirectory);
+                    }
 
-                if (temp2Directories.All(c => c.DriveName != driveInfo.Name))
-                {
-                    ChiaDirectory tempDirectory = new ChiaDirectory();
-                    tempDirectory.DriveName = driveInfo.Name;
-                    temp2Directories.Add(tempDirectory);
+                    if (temp2Directories.All(c => c.DriveName != driveInfo.Name))
+                    {
+                        ChiaDirectory tempDirectory = new ChiaDirectory();
+                        tempDirectory.DriveName = driveInfo.Name;
+                        temp2Directories.Add(tempDirectory);
+                    }
                 }
             }
+            catch (Exception exception)
+            {
+                SetMessage(exception.Message + exception.StackTrace, MessageType.Error);
+
+            }
+
         }
 
         #region CheckedListBox
@@ -626,6 +687,19 @@ namespace CHIA_PLOT
                 quickEditKey?.SetValue("QuickEdit", 0);
             }
 
+        }
+
+        private void cblD_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            if (e.NewValue == CheckState.Checked)
+            {
+                Arguments.Directories[e.Index].Checked = true;
+            }
+            else
+            {
+                Arguments.Directories[e.Index].Checked = false;
+
+            }
         }
 
         //private void CheckDiskType(BindingList<ChiaDirectory> directories, BindingList<ChiaDirectory> temp1Directories, BindingList<ChiaDirectory> temp2Directories)

@@ -15,6 +15,8 @@ namespace CHIA_PLOT
         /// </summary>
         public ushort B { get; set; }
 
+        public byte N { get; set; }
+
         public byte Parallel { get; set; }
 
         public byte Delay { get; set; }
@@ -137,7 +139,8 @@ namespace CHIA_PLOT
     {
         Start,
         End,
-        Normal
+        Normal,
+        Error
     }
 
     public class K

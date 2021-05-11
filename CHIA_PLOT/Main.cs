@@ -47,8 +47,8 @@ namespace CHIA_PLOT
             k32.KName = "32";
             k32.Thread = 4;
             k32.KSize = (long)(101.4 * 1024 * 1024 * 1024);
-            k32.Size = "101.4 GiB";
-            k32.TempSize = 239;
+            //k32.Size = "101.4 GiB";
+            k32.TempSize = (long)239 * 1024 * 1024 * 1024;
             kList.Add(k32);
 
             K k33 = new K();
@@ -57,7 +57,7 @@ namespace CHIA_PLOT
             k33.KName = "33";
             k33.Thread = 4;
             k33.KSize = (long)(208.8 * 1024 * 1024 * 1024);
-            k33.Size = "208.8 GiB";
+            //k33.Size = "208.8 GiB";
             k33.TempSize = 239;
             kList.Add(k33);
 
@@ -67,7 +67,7 @@ namespace CHIA_PLOT
             k34.KName = "34";
             k34.Thread = 4;
             k34.KSize = (long)(429.8 * 1024 * 1024 * 1024);
-            k34.Size = "429.8 GiB";
+            //k34.Size = "429.8 GiB";
             k34.TempSize = 1041;
             kList.Add(k34);
 
@@ -77,7 +77,7 @@ namespace CHIA_PLOT
             k35.KName = "35";
             k35.Thread = 4;
             k35.KSize = (long)(884.1 * 1024 * 1024 * 1024);
-            k35.Size = "884.1 GiB";
+            //k35.Size = "884.1 GiB";
             k35.TempSize = 2175;
             kList.Add(k35);
 
@@ -122,22 +122,6 @@ namespace CHIA_PLOT
             cblD.DisplayMember = nameof(ChiaDirectory.DriveName);
             cblD.ValueMember = nameof(ChiaDirectory.Checked);
             cblD.DataSource = directoriesBindingSource;
-
-
-            //foreach (DataGridViewColumn column in gvJobs.Columns)
-            //{
-            //    if (column.Frozen == false)
-            //        column.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            //    column.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
-            //}
-
-            //foreach (DataGridViewColumn column in gvMessages.Columns)
-            //{
-            //    if (column.Frozen == false)
-            //        column.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            //    column.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
-            //}
-
         }
 
         private void _uiRefreshTimer_Tick(object sender, EventArgs e)
@@ -166,43 +150,66 @@ namespace CHIA_PLOT
             {
                 _jobTimer.Interval = Arguments.Delay * 60 * 1000;
                 string d = string.Empty;
-                var t = Arguments.Temp1Directories.FirstOrDefault(c => c.Checked)?.DriveName;
-                var t2 = Arguments.Temp2Directories.FirstOrDefault(c => c.Checked)?.DriveName;
-
-                if (string.IsNullOrEmpty(t))
-                {
-                    SetMessage($"请选择缓存盘", MessageType.Normal);
-                    return;
-                }
-                else
-                {
-                    t = Path.Combine(t, "t");
-                    if (!Directory.Exists(t))
-                    {
-                        Directory.CreateDirectory(t);
-                    }
-                }
-                if (string.IsNullOrEmpty(t2))
-                {
-                    SetMessage($"请选择第二缓存盘", MessageType.Normal);
-                    return;
-                }
-                else
-                {
-                    t2 = Path.Combine(t2, "t2");
-                    if (!Directory.Exists(t2))
-                    {
-                        Directory.CreateDirectory(t2);
-                    }
-                }
-
+                string t = string.Empty;
+                string t2 = string.Empty;
 
                 #region 选择磁盘
+
+                var drivers = DriveInfo.GetDrives().Where(c => c.DriveType != DriveType.CDRom).ToList();
+
+                //t
+                foreach (ChiaDirectory chiaDirectory in Arguments.Temp1Directories.Where(c => c.Checked))
+                {
+                    //计算当前盘符运行中的容量
+                    var driveInfo = drivers.First(c => c.Name == chiaDirectory.DriveName);
+                    long totalCount = driveInfo.TotalSize / Arguments.K.TempSize;
+                    long runningCount = Arguments.Jobs.Count(c => Path.GetPathRoot(c.T) == chiaDirectory.DriveName);
+
+                    if (totalCount > runningCount)
+                    {
+                        t = Path.Combine(driveInfo.Name, "t");
+                        if (!Directory.Exists(t))
+                        {
+                            Directory.CreateDirectory(t);
+                        }
+                        break;
+                    }
+                }
+                if (string.IsNullOrEmpty(t))
+                {
+                    SetMessage($"缓存目录没有可用的磁盘空间,下一个轮回（{Arguments.Delay}分钟后）将再次尝试。", MessageType.Normal);
+                    return;
+                }
+
+                //t2
+                switch (Arguments.Temp1Directories.Count(c => c.Checked))
+                {
+                    case 1:
+                        if (Arguments.Temp2Directories.Count(c => c.Checked) > 0)
+                        {
+                            t2 = Arguments.Temp2Directories.First(c => c.Checked).DriveName;
+                            t2 = Path.Combine(t2, "t2");
+                        }
+                        else
+                        {
+                            t2 = Path.Combine(Path.GetPathRoot(t), "t2");
+                        }
+                        break;
+                    default:
+                        t2 = Path.Combine(Path.GetPathRoot(t), "t2");
+                        break;
+                }
+                if (!Directory.Exists(t2))
+                {
+                    Directory.CreateDirectory(t2);
+                }
+
+                //d
                 foreach (ChiaDirectory chiaDirectory in Arguments.Directories.Where(c => c.Checked))
                 {
                     //计算当前盘符运行中的容量
-                    long runningChiaSize = Arguments.Jobs.Count(c => Path.GetPathRoot(c.Directory) == chiaDirectory.DriveName) * Arguments.K.KSize;
-                    var driveInfo = DriveInfo.GetDrives().First(c => c.Name == chiaDirectory.DriveName);
+                    long runningChiaSize = Arguments.Jobs.Count(c => Path.GetPathRoot(c.D) == chiaDirectory.DriveName) * Arguments.K.KSize;
+                    var driveInfo = drivers.First(c => c.Name == chiaDirectory.DriveName);
                     if (driveInfo.TotalFreeSpace >= runningChiaSize + Arguments.K.KSize)
                     {
                         d = Path.Combine(driveInfo.Name, "Farm");
@@ -216,7 +223,7 @@ namespace CHIA_PLOT
 
                 if (string.IsNullOrEmpty(d))
                 {
-                    SetMessage($"HDD没有可用的磁盘空间,下一个轮回（{Arguments.Delay}分钟后）将再次尝试。", MessageType.Normal);
+                    SetMessage($"最终目录没有可用的磁盘空间,下一个轮回（{Arguments.Delay}分钟后）将再次尝试。", MessageType.Normal);
                     return;
                 }
 
@@ -270,7 +277,7 @@ namespace CHIA_PLOT
 
                     job.ProcessId = process.Id;
                     job.StartTime = process.StartTime;
-                    job.Directory = d;
+                    job.D = d;
                     Arguments.Jobs.Add(job);
 
                     SetMessage($"任务{job.Id} 使用命令'{command}'成功创建任务。{Arguments.Jobs.Count}/{Arguments.Parallel}", MessageType.Start);
@@ -286,7 +293,6 @@ namespace CHIA_PLOT
                 SetMessage(exception.Message + exception.StackTrace, MessageType.Error);
 
             }
-
         }
 
         private void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
@@ -365,11 +371,6 @@ namespace CHIA_PLOT
                     SetMessage("请选择缓存目录磁盘。", MessageType.Normal);
                     return;
                 }
-                if (Arguments.Temp2Directories.Count(c => c.Checked) == 0)
-                {
-                    SetMessage("请选择第二缓存目录磁盘。", MessageType.Normal);
-                    return;
-                }
                 if (!_jobTimer.Enabled)
                 {
                     _jobTimer.Start();
@@ -394,6 +395,9 @@ namespace CHIA_PLOT
                         AppendTextColorful(message, Color.ForestGreen);
                         break;
                     case MessageType.End:
+                        AppendTextColorful(message, Color.MidnightBlue);
+                        break;
+                    case MessageType.Error:
                         AppendTextColorful(message, Color.Crimson);
                         break;
                     default:
@@ -485,13 +489,40 @@ namespace CHIA_PLOT
         {
             try
             {
-                foreach (DriveInfo driveInfo in DriveInfo.GetDrives()/*.Where(c => c.DriveType == DriveType.Fixed)*/)
+                var drivers = DriveInfo.GetDrives().Where(c => c.DriveType != DriveType.CDRom);
+                //移除
+                for (int i = directories.Count - 1; i >= 0; i--)
+                {
+                    ChiaDirectory chiaDirectory = directories[i];
+                    if (drivers.All(c => c.Name != chiaDirectory.DriveName))
+                    {
+                        directories.Remove(chiaDirectory);
+                    }
+                }
+                for (int i = temp1Directories.Count - 1; i >= 0; i--)
+                {
+                    ChiaDirectory chiaDirectory = temp1Directories[i];
+                    if (drivers.All(c => c.Name != chiaDirectory.DriveName))
+                    {
+                        temp1Directories.Remove(chiaDirectory);
+                    }
+                }
+                for (int i = temp2Directories.Count - 1; i >= 0; i--)
+                {
+                    ChiaDirectory chiaDirectory = temp2Directories[i];
+                    if (drivers.All(c => c.Name != chiaDirectory.DriveName))
+                    {
+                        temp2Directories.Remove(chiaDirectory);
+                    }
+                }
+                //添加
+                foreach (DriveInfo driveInfo in drivers)
                 {
                     if (directories.All(c => c.DriveName != driveInfo.Name))
                     {
                         ChiaDirectory chiaDirectory = new ChiaDirectory();
                         chiaDirectory.DriveName = driveInfo.Name;
-                        chiaDirectory.Checked = false;
+                        chiaDirectory.Checked = true;
                         directories.Add(chiaDirectory);
                     }
 
@@ -509,25 +540,63 @@ namespace CHIA_PLOT
                         temp2Directories.Add(tempDirectory);
                     }
                 }
+                //设置最终目录选定状态
+                for (int i = 0; i < directories.Count; i++)
+                {
+                    cblD.SetItemChecked(i, directories[i].Checked);
+                }
             }
             catch (Exception exception)
             {
                 SetMessage(exception.Message + exception.StackTrace, MessageType.Error);
-
             }
-
         }
 
-        #region CheckedListBox
+        #region LocalDiskChecked
 
         private void cblT_ItemCheck(object sender, ItemCheckEventArgs e)
         {
-            SingleChocieCheckedListBox((CheckedListBox)sender, e);
+            if (e.NewValue == CheckState.Checked)
+            {
+                Arguments.Temp1Directories[e.Index].Checked = true;
+            }
+            else
+            {
+                Arguments.Temp1Directories[e.Index].Checked = false;
+            }
+
+            if (Arguments.Temp1Directories.Count(c => c.Checked) > 1)
+            {
+                for (int i = 0; i < cbl2.CheckedItems.Count; i++)
+                {
+                    ChiaDirectory chiaDirectory = (ChiaDirectory)cbl2.CheckedItems[i];
+                    var index = cbl2.Items.IndexOf(chiaDirectory);
+                    cbl2.SetItemCheckState(index, CheckState.Unchecked);
+                }
+
+                cbl2.Enabled = false;
+            }
+            else
+            {
+                cbl2.Enabled = true;
+            }
         }
 
         private void cbl2_ItemCheck(object sender, ItemCheckEventArgs e)
         {
             SingleChocieCheckedListBox((CheckedListBox)sender, e);
+        }
+
+        private void cblD_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            if (e.NewValue == CheckState.Checked)
+            {
+                Arguments.Directories[e.Index].Checked = true;
+            }
+            else
+            {
+                Arguments.Directories[e.Index].Checked = false;
+            }
         }
 
         private void SingleChocieCheckedListBox(CheckedListBox checkedListBox, ItemCheckEventArgs e)
@@ -655,7 +724,6 @@ namespace CHIA_PLOT
             }
         }
 
-
         private void Main_Load(object sender, EventArgs e)
         {
             //获取命令行快速编辑状态
@@ -690,18 +758,7 @@ namespace CHIA_PLOT
 
         }
 
-        private void cblD_ItemCheck(object sender, ItemCheckEventArgs e)
-        {
-            if (e.NewValue == CheckState.Checked)
-            {
-                Arguments.Directories[e.Index].Checked = true;
-            }
-            else
-            {
-                Arguments.Directories[e.Index].Checked = false;
 
-            }
-        }
 
         //private void CheckDiskType(BindingList<ChiaDirectory> directories, BindingList<ChiaDirectory> temp1Directories, BindingList<ChiaDirectory> temp2Directories)
         //{

@@ -77,7 +77,6 @@ namespace CHIA_PLOT
 
     public class Job
     {
-
         public Job(Arguments arguments)
         {
             this.Arguments = arguments;
@@ -118,7 +117,11 @@ namespace CHIA_PLOT
         /// <summary>
         /// 最终文件夹
         /// </summary>
-        public string Directory { get; set; }
+        public string D { get; set; }
+
+        public string T { get; set; }
+
+        public string T2 { get; set; }
 
         public bool BitField => Arguments.E;
 
@@ -156,9 +159,12 @@ namespace CHIA_PLOT
         [Browsable(false)]
         public long KSize { get; set; }
 
-        public string Size { get; set; }
+        public string KSizeReadable => FileSizeString(KSize);
 
-        public double TempSize { get; set; }
+        [Browsable(false)]
+        public long TempSize { get; set; }
+
+        public string TempSizeReadable => FileSizeString(TempSize);
 
         /// <summary>
         /// 转换字节大小、长度, 根据字节大小范围返回KB, MB, GB自适长度
